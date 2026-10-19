@@ -1,0 +1,39 @@
+id: extract-json
+lesson: "2.3"
+title: Extract clean JSON
+mode: system_prompt
+simulator: json-extract
+goal:
+  - "Turn each messy message into JSON with exactly these fields: invoice (string), vendor (string), due (YYYY-MM-DD, or null if missing), total (number)"
+  - Return only the JSON, nothing else
+  - If a message mentions two amounts, total is the final amount due
+field:
+  label: Your prompt
+  placeholder: Turn the message into JSON...
+  starter: Extract the invoice details from the message.
+  max_chars: 2000
+max_tokens: 300
+passing: 0.8
+tests:
+  - id: plain
+    label: Clean case
+    user: "Invoice 3321 from Harbor Supply, due March 4, total $1,250.00."
+    checks:
+      - { type: json_valid, feedback: "The reply is not pure JSON. Say 'Return only the JSON, no explanation and no code fence.'" }
+      - { type: json_keys, keys: [invoice, vendor, due, total], feedback: "Missing a field. Name every field the program expects." }
+      - { type: json_equals, expected: { invoice: "3321", vendor: "Harbor Supply", due: "2026-03-04", total: 1250 }, feedback: "A value is wrong. Check the date format and that total is a number, not a string." }
+  - id: missing-date
+    label: Missing information
+    user: "Hi, invoice 4410 from Delta Freight, total $980.50. Please confirm."
+    checks:
+      - { type: json_valid, feedback: "The reply is not pure JSON." }
+      - { type: json_equals, expected: { invoice: "4410", vendor: "Delta Freight", due: null, total: 980.5 }, feedback: "When the date is missing the model must not guess. Tell it to use null." }
+  - id: two-amounts
+    label: Two amounts
+    user: "Invoice 5002 from Oak & Pine, due April 15. Original total $400.00, after late fee $425.00."
+    checks:
+      - { type: json_valid, feedback: "The reply is not pure JSON." }
+      - { type: json_equals, expected: { invoice: "5002", vendor: "Oak & Pine", due: "2026-04-15", total: 425 }, feedback: "With two amounts the model picked the wrong one. Say which amount counts." }
+hints:
+  - What should happen when the date is missing?
+  - How should the date be written? Show one example of valid output.
