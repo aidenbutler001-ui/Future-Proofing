@@ -98,6 +98,8 @@ export interface TestResult {
   failures: string[];
   /** Judge checks that could not run. */
   skipped: number;
+  /** The model could not answer or be graded for this test (busy, unreachable). Not the learner's fault. */
+  error?: boolean;
 }
 
 export interface RunResult {
@@ -109,4 +111,6 @@ export interface RunResult {
   total: number;
   solved: boolean;
   simulated: boolean;
+  /** Some tests could not run; the score is not final and the learner should run again. */
+  incomplete?: boolean;
 }

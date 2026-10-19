@@ -46,7 +46,8 @@ Every check carries `feedback` that names the idea. `repeats` re-runs each test 
 - `POST /api/puzzles/<id>/run` with `{ "input": "..." }` runs the hidden tests and returns per-test results.
 - `GET /api/health` reports lesson count, whether a live model is configured, and puzzle files that failed to load.
 - Models: `PUZZLE_MODEL` (default `claude-haiku-5-5`) answers the learner's prompt; `JUDGE_MODEL` (default `claude-sonnet-5-5`) grades `judge` checks.
-- Abuse limits: `RATE_LIMIT_PER_HOUR` per IP and `DAILY_RUN_CAP` overall (in memory; use a shared store for several instances).
+- Abuse limits (in memory; use a shared store for several instances): per client `RATE_LIMIT_PER_HOUR` runs and `RATE_LIMIT_CALLS_PER_HOUR` model calls, and overall `DAILY_RUN_CAP` runs and `DAILY_CALL_CAP` model calls. Invalid values fall back to the defaults.
+- Client identity for those limits comes only from a header you declare trusted (`TRUST_IP_HEADER`, or `TRUSTED_PROXY_HOPS` for X-Forwarded-For). Set one when deploying behind a proxy; otherwise all callers share a single strict bucket.
 - Learner text is never logged.
 
 ## Not built yet

@@ -105,13 +105,13 @@ function Results({ result, puzzle }: { result: RunResult; puzzle: PublicPuzzle }
       <div className="score">
         {result.passedCount} of {result.total} passed{result.solved ? ". Nicely done." : ""}
       </div>
+      {result.incomplete && <p className="notice">Some tests could not run because the model was busy. Run the tests again for a final score.</p>}
       {result.simulated && <p className="note">Simulated model: a live model may behave differently.</p>}
       {result.tests.map((t) => (
         <div className="test" key={t.id}>
           {t.user && (<><div className="who">Test message</div><div className="bubble">{t.user}</div></>)}
-          <div className="who">Reply</div>
-          <div className="bubble bot">{t.reply}</div>
-          <span className={`verdict ${t.passed ? "pass" : "fail"}`}>{t.passed ? "PASS" : "FAIL"}</span>
+          {!t.error && (<><div className="who">Reply</div><div className="bubble bot">{t.reply}</div></>)}
+          <span className={`verdict ${t.passed ? "pass" : "fail"}`}>{t.error ? "COULD NOT RUN" : t.passed ? "PASS" : "FAIL"}</span>
           {t.failures.map((m, i) => <div className="why" key={i}>{m}</div>)}
           {t.skipped > 0 && <div className="why">A quality check could not run in practice mode.</div>}
         </div>

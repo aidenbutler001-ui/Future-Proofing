@@ -1,14 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getPuzzle } from "@/lib/content";
 import { getModelClient, ModelUnavailableError } from "@/lib/puzzles/model";
+import { clientId } from "@/lib/puzzles/client-id";
 import { checkLimits } from "@/lib/puzzles/ratelimit";
-import { runPuzzle } from "@/lib/puzzles/run";
+import { maxCalls, runPuzzle } from "@/lib/puzzles/run";
 
 export const dynamic = "force-dynamic";
-
-function clientId(req: NextRequest): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
-}
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -28,7 +25,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ error: `Keep it under ${spec.field.max_chars} characters.` }, { status: 400 });
   }
 
-  const limit = checkLimits(clientId(req));
+  const limit = checkLimits(clientId(req.headers), maxCalls(spec));
   if (!limit.ok) {
     return NextResponse.json({ error: limit.reason }, { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } });
   }

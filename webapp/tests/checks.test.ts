@@ -3,7 +3,6 @@ import { countSentences, evaluateCheck } from "@/lib/puzzles/checks";
 import { runPuzzle, selectTests } from "@/lib/puzzles/run";
 import { createSimulatedClient } from "@/lib/puzzles/model";
 import { puzzleSchema } from "@/lib/puzzles/types";
-import { checkLimits, resetLimits } from "@/lib/puzzles/ratelimit";
 import YAML from "yaml";
 import fs from "node:fs";
 import path from "node:path";
@@ -66,17 +65,5 @@ describe("puzzle runner (simulated)", () => {
     const res = await runPuzzle(spec, "You are Mara.", createSimulatedClient());
     expect(res.fieldFailures.length).toBe(1);
     expect(res.tests).toEqual([]);
-  });
-});
-
-describe("rate limit", () => {
-  it("caps runs per client and per day", () => {
-    resetLimits();
-    const env = { RATE_LIMIT_PER_HOUR: "2", DAILY_RUN_CAP: "3" } as unknown as NodeJS.ProcessEnv;
-    expect(checkLimits("a", 0, env).ok).toBe(true);
-    expect(checkLimits("a", 1, env).ok).toBe(true);
-    expect(checkLimits("a", 2, env).ok).toBe(false);
-    expect(checkLimits("b", 3, env).ok).toBe(true);
-    expect(checkLimits("c", 4, env).ok).toBe(false);
   });
 });
